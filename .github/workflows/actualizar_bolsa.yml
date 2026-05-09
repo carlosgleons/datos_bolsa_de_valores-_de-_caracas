@@ -27,21 +27,27 @@ jobs:
         with:
           r-version: '4.4.0'
 
-      # 3. Cachear paquetes R (evita reinstalar en cada ejecución — ahorra ~3 min)
+      # 3. Instalar dependencias del sistema para httr (curl, SSL)
+      - name: Instalar dependencias del sistema
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+
+      # 4. Cachear paquetes R (evita reinstalar en cada ejecución — ahorra ~3 min)
       - name: Cache paquetes R
         uses: actions/cache@v4
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: r-pkgs-${{ hashFiles('**/DESCRIPTION') }}-v1
-          restore-keys: r-pkgs-
+          key: r-pkgs-v2-${{ runner.os }}
+          restore-keys: r-pkgs-v2-
 
-      # 4. Instalar dependencias R
+      # 5. Instalar paquetes R
       - name: Instalar paquetes R
         run: |
           install.packages(c(
             "readr", "dplyr", "stringr", "tidyr", "purrr",
             "lubridate", "httr", "writexl"
-          ), repos = "https://cloud.r-project.org")
+          ), repos = "https://cloud.r-project.org", Ncpus = 2)
         shell: Rscript {0}
 
       # 5. Correr el script principal
