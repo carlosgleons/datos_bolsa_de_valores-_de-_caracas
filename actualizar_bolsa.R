@@ -197,12 +197,16 @@ df_indices <- df_indices_raw |>
   rename(IBC = any_of("IG"))
 
 # --- 7.2 Panel de precios wide ---
-df_panel <- df_precios_raw |>
+df_panel_pre <- df_precios_raw |>
   pivot_wider(names_from = Ticker, values_from = Precio, values_fn = mean) |>
   full_join(df_indices, by = "Fecha") |>
-  arrange(Fecha) |>
-  complete(Fecha = seq.Date(min(.$Fecha, na.rm = TRUE),
-                            max(.$Fecha, na.rm = TRUE), by = "day"))
+  arrange(Fecha)
+
+fecha_min <- min(df_panel_pre$Fecha, na.rm = TRUE)
+fecha_max <- max(df_panel_pre$Fecha, na.rm = TRUE)
+
+df_panel <- df_panel_pre |>
+  complete(Fecha = seq.Date(fecha_min, fecha_max, by = "day"))
 
 tickers_presentes <- intersect(tickers, names(df_panel))
 df_panel <- df_panel |> fill(all_of(tickers_presentes), .direction = "down")
