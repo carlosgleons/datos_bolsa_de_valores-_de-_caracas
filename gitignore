@@ -1,0 +1,12 @@
+# Archivos .dat crudos — no se suben al repo (son pesados y se regeneran)
+data/raw/
+
+# Archivos temporales de R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
