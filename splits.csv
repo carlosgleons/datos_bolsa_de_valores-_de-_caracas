@@ -1,0 +1,4 @@
+Ticker,Fecha,Factor,Tipo
+BNC,2025-01-16,500,precio_mult
+BPV,2024-04-11,2.000,precio_div
+BPV,2024-05-07,3.327,precio_div
