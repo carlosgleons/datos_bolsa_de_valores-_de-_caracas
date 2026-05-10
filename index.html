@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolsa de Valores de Caracas — Datos Históricos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0a0c0f;
+    --surface:  #111418;
+    --border:   #1e2329;
+    --muted:    #2a3040;
+    --text:     #e8eaf0;
+    --dim:      #6b7385;
+    --green:    #00e5a0;
+    --red:      #ff4d6a;
+    --gold:     #f5c842;
+    --blue:     #4d9fff;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .logo span { color: var(--gold); }
+
+  .header-meta {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── SUMMARY BAR ── */
+  .summary-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .summary-bar::-webkit-scrollbar { display: none; }
+
+  .stat-cell {
+    padding: 14px 24px;
+    border-right: 1px solid var(--border);
+    min-width: 140px;
+    flex-shrink: 0;
+  }
+
+  .stat-cell:first-child { padding-left: 2rem; }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    font-family: var(--font-head);
+  }
+
+  .stat-change {
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .neu { color: var(--dim); }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  /* ── SECTION TITLES ── */
+  .section-title {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── PANELS ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .panel-title {
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .panel-body { padding: 20px; }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  select {
+    background: var(--muted);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7385'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+  }
+
+  select:focus { border-color: var(--gold); }
+
+  .btn-group {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .btn {
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--border);
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+  }
+
+  .btn:last-child { border-right: none; }
+  .btn:hover { background: var(--muted); color: var(--text); }
+  .btn.active { background: var(--gold); color: var(--bg); font-weight: 500; }
+
+  /* ── GRID 2-COL ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* ── CHARTS ── */
+  .chart-container {
+    width: 100%;
+    height: 320px;
+  }
+
+  .chart-container-tall {
+    width: 100%;
+    height: 380px;
+  }
+
+  /* ── TABLE ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .data-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+
+  .data-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--muted); }
+
+  .rank-num {
+    color: var(--dim);
+    font-size: 11px;
+    width: 24px;
+  }
+
+  .ticker-badge {
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mini-bar {
+    height: 4px;
+    border-radius: 2px;
+    min-width: 2px;
+    max-width: 80px;
+  }
+
+  /* ── LOADING / ERROR ── */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--dim);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .dot-pulse::after {
+    content: '...';
+    animation: dots 1.2s steps(4, end) infinite;
+  }
+
+  @keyframes dots {
+    0%, 20%  { content: '.'; }
+    40%      { content: '..'; }
+    60%, 100%{ content: '...'; }
+  }
+
+  /* ── TICKER SEARCH TABLE ── */
+  .search-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .price-table-wrap {
+    max-height: 340px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted) transparent;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--dim);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  footer a { color: var(--dim); text-decoration: none; }
+  footer a:hover { color: var(--gold); }
+
+  /* ── STATUS DOT ── */
+  .status-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    margin-right: 6px;
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">BVC<span>·</span>Data</div>
+  <div class="header-meta" id="header-meta">Cargando datos...</div>
+</header>
+
+<!-- SUMMARY BAR -->
+<div class="summary-bar" id="summary-bar">
+  <div class="stat-cell"><div class="stat-label">IBC</div><div class="stat-value" id="s-ibc">—</div><div class="stat-change" id="s-ibc-chg">—</div></div>
+  <div class="stat-cell"><div class="stat-label">Índice Financiero</div><div class="stat-value" id="s-if">—</div><div class="stat-change" id="s-if-chg">—</div></div>
+  <div class="stat-cell"><div class="stat-label">Índice Industrial</div><div class="stat-value" id="s-ii">—</div><div class="stat-change" id="s-ii-chg">—</div></div>
+  <div class="stat-cell"><div class="stat-label">Tipo de Cambio</div><div class="stat-value" id="s-tc">—</div><div class="stat-change neu">Bs / USD</div></div>
+  <div class="stat-cell"><div class="stat-label">Última sesión</div><div class="stat-value" id="s-fecha" style="font-size:14px">—</div><div class="stat-change" id="s-status">—</div></div>
+</div>
+
+<main>
+
+  <!-- ── ÍNDICES ── -->
+  <div>
+    <div class="section-title">Índices del Mercado</div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title" id="indices-title">IBC — Índice Bursátil de Capitalización</div>
+        <div class="controls">
+          <div class="btn-group" id="idx-tabs">
+            <button class="btn active" onclick="setIndex('IBC','IBC — Índice Bursátil de Capitalización',this)">IBC</button>
+            <button class="btn" onclick="setIndex('IF','Índice Financiero',this)">Financiero</button>
+            <button class="btn" onclick="setIndex('II','Índice Industrial',this)">Industrial</button>
+          </div>
+          <div class="btn-group" id="idx-range">
+            <button class="btn" onclick="setRange('idx',30,this)">1M</button>
+            <button class="btn" onclick="setRange('idx',90,this)">3M</button>
+            <button class="btn active" onclick="setRange('idx',180,this)">6M</button>
+            <button class="btn" onclick="setRange('idx',365,this)">1A</button>
+            <button class="btn" onclick="setRange('idx',9999,this)">Todo</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div id="chart-indices" class="chart-container-tall">
+          <div class="loading"><span class="dot-pulse">Cargando</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TICKER ── -->
+  <div>
+    <div class="section-title">Análisis por Acción</div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Precio y Volumen</div>
+        <div class="controls">
+          <select id="sel-ticker" onchange="renderTicker()"></select>
+          <select id="sel-datatype" onchange="renderTicker()">
+            <option value="usd">Precio USD</option>
+            <option value="bs">Precio Bs</option>
+            <option value="vol_usd">Volumen USD</option>
+            <option value="vol_bs">Volumen Bs</option>
+            <option value="ops">N° Operaciones</option>
+            <option value="cant">Cantidad Acciones</option>
+          </select>
+          <div class="btn-group" id="tkr-range">
+            <button class="btn" onclick="setRange('tkr',30,this)">1M</button>
+            <button class="btn active" onclick="setRange('tkr',90,this)">3M</button>
+            <button class="btn" onclick="setRange('tkr',180,this)">6M</button>
+            <button class="btn" onclick="setRange('tkr',365,this)">1A</button>
+            <button class="btn" onclick="setRange('tkr',9999,this)">Todo</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div id="chart-ticker" class="chart-container-tall">
+          <div class="loading"><span class="dot-pulse">Cargando</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WINNERS / LOSERS ── -->
+  <div>
+    <div class="section-title">Rendimiento del Período</div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Top Ganadores & Perdedores</div>
+        <div class="controls">
+          <div class="btn-group" id="wl-period">
+            <button class="btn" onclick="setPeriod('wl','7d',this)">Semanal</button>
+            <button class="btn active" onclick="setPeriod('wl','30d',this)">Mensual</button>
+            <button class="btn" onclick="setPeriod('wl','ytd',this)">YTD</button>
+            <button class="btn" onclick="setPeriod('wl','1y',this)">Anual</button>
+          </div>
+          <select id="sel-wl-currency" onchange="renderWinnersLosers()">
+            <option value="usd">USD</option>
+            <option value="bs">Bs</option>
+          </select>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="grid-2">
+          <div>
+            <div class="section-title" style="font-size:10px;color:var(--green);margin-bottom:12px">
+              🟢 Top 5 Ganadores
+            </div>
+            <table class="data-table" id="table-winners">
+              <thead><tr>
+                <th>#</th><th>Ticker</th><th>Retorno</th><th>Días negoc.</th>
+              </tr></thead>
+              <tbody><tr><td colspan="4" style="color:var(--dim);text-align:center;padding:20px">Cargando...</td></tr></tbody>
+            </table>
+          </div>
+          <div>
+            <div class="section-title" style="font-size:10px;color:var(--red);margin-bottom:12px">
+              🔴 Top 5 Perdedores
+            </div>
+            <table class="data-table" id="table-losers">
+              <thead><tr>
+                <th>#</th><th>Ticker</th><th>Retorno</th><th>Días negoc.</th>
+              </tr></thead>
+              <tbody><tr><td colspan="4" style="color:var(--dim);text-align:center;padding:20px">Cargando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div>
+    <span class="status-dot"></span>
+    Datos: <a href="https://www.bolsadecaracas.com" target="_blank">bolsadecaracas.com</a>
+    &nbsp;·&nbsp;
+    Actualización automática diaria vía GitHub Actions
+  </div>
+  <div>
+    <a href="https://github.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas" target="_blank">
+      Ver repositorio / Descargar CSV
+    </a>
+    &nbsp;·&nbsp; Carlos G. León
+  </div>
+</footer>
+
+<script>
+// ============================================================
+// CONFIG — apunta a tu repo
+// ============================================================
+const BASE = "https://raw.githubusercontent.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas/main/data/";
+
+const FILES = {
+  precios_usd: BASE + "precios_usd.csv",
+  precios_bs:  BASE + "precios_bs.csv",
+  vol_usd:     BASE + "volumen_usd.csv",
+  vol_bs:      BASE + "volumen_bs.csv",
+  ops:         BASE + "operaciones.csv",
+  cant:        BASE + "cantidades.csv",
+  meta:        BASE + "metadata.csv",
+};
+
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  data: {},          // loaded CSVs keyed by type
+  currentIndex: "IBC",
+  idxDays:  180,
+  tkrDays:   90,
+  wlPeriod: "30d",
+  ticker:    null,
+};
+
+// Plotly layout defaults
+const LAYOUT_BASE = {
+  paper_bgcolor: "transparent",
+  plot_bgcolor:  "transparent",
+  font: { family: "'DM Mono', monospace", color: "#6b7385", size: 11 },
+  margin: { t: 10, r: 20, b: 40, l: 60 },
+  xaxis: {
+    gridcolor: "#1e2329", linecolor: "#1e2329",
+    tickfont: { size: 10 }, showgrid: true,
+  },
+  yaxis: {
+    gridcolor: "#1e2329", linecolor: "#1e2329",
+    tickfont: { size: 10 }, showgrid: true, zeroline: false,
+  },
+  hovermode: "x unified",
+  hoverlabel: {
+    bgcolor: "#111418", bordercolor: "#2a3040",
+    font: { family: "'DM Mono', monospace", size: 11, color: "#e8eaf0" },
+  },
+  legend: { bgcolor: "transparent", font: { size: 11 } },
+};
+
+const CFG = { displayModeBar: false, responsive: true };
+
+// ============================================================
+// DATA LOADING
+// ============================================================
+function parseCSV(url) {
+  return new Promise((res, rej) => {
+    Papa.parse(url, {
+      download: true, header: true, skipEmptyLines: true,
+      complete: r => res(r.data),
+      error:    e => rej(e),
+    });
+  });
+}
+
+function toDate(str) { return new Date(str); }
+
+function sliceDays(rows, days, dateKey = "Fecha") {
+  if (days >= 9999) return rows;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  return rows.filter(r => toDate(r[dateKey]) >= cutoff);
+}
+
+function getCol(rows, col) {
+  return rows.map(r => r[col] === "" || r[col] === undefined ? null : +r[col]);
+}
+
+function getDates(rows, col = "Fecha") { return rows.map(r => r[col]); }
+
+// Load all required CSVs in parallel
+async function loadAll() {
+  const keys = ["precios_usd", "precios_bs", "vol_usd", "vol_bs", "ops", "cant", "meta"];
+  const results = await Promise.allSettled(keys.map(k => parseCSV(FILES[k])));
+  results.forEach((r, i) => {
+    if (r.status === "fulfilled") state.data[keys[i]] = r.value;
+    else console.warn("Failed to load", keys[i], r.reason);
+  });
+}
+
+// ============================================================
+// TICKERS
+// ============================================================
+function getTickers() {
+  const df = state.data.precios_usd;
+  if (!df || !df.length) return [];
+  return Object.keys(df[0]).filter(k => k !== "Fecha" && k !== "TC" && k !== "IBC" && k !== "IF" && k !== "II");
+}
+
+function populateTickerSelect() {
+  const sel = document.getElementById("sel-ticker");
+  const tickers = getTickers();
+  tickers.forEach(t => {
+    const o = document.createElement("option");
+    o.value = o.textContent = t;
+    sel.appendChild(o);
+  });
+  if (tickers.length) state.ticker = tickers[0];
+}
+
+// ============================================================
+// SUMMARY BAR
+// ============================================================
+function fmt(n, dec = 2) {
+  if (n === null || n === undefined || isNaN(n)) return "—";
+  return n.toLocaleString("es-VE", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+function fmtPct(n) {
+  if (n === null || isNaN(n)) return "—";
+  const sign = n >= 0 ? "+" : "";
+  return sign + n.toFixed(2) + "%";
+}
+
+function pctClass(n) { return n > 0 ? "pos" : n < 0 ? "neg" : "neu"; }
+
+function renderSummary() {
+  const df = state.data.precios_bs;
+  if (!df || df.length < 2) return;
+
+  const last = df[df.length - 1];
+  const prev = df[df.length - 2];
+
+  const fields = [
+    ["s-ibc",    "s-ibc-chg",  "IBC",  2],
+    ["s-if",     "s-if-chg",   "IF",   2],
+    ["s-ii",     "s-ii-chg",   "II",   2],
+  ];
+
+  fields.forEach(([valId, chgId, col, dec]) => {
+    const v = +last[col], p = +prev[col];
+    const chg = p ? (v - p) / p * 100 : null;
+    const el = document.getElementById(valId);
+    const ec = document.getElementById(chgId);
+    if (el) el.textContent = fmt(v, dec);
+    if (ec) {
+      ec.textContent = fmtPct(chg);
+      ec.className = "stat-change " + pctClass(chg);
+    }
+  });
+
+  const tc = document.getElementById("s-tc");
+  if (tc) tc.textContent = fmt(+last["TC"], 4);
+
+  const fecha = document.getElementById("s-fecha");
+  if (fecha) fecha.textContent = last["Fecha"];
+
+  const status = document.getElementById("s-status");
+  if (status) {
+    status.innerHTML = '<span class="status-dot"></span>Actualizado';
+    status.className = "stat-change pos";
+  }
+
+  const meta = state.data.meta;
+  const hm = document.getElementById("header-meta");
+  if (meta && meta.length && hm) {
+    const updated = meta.find(r => r.campo === "ultima_actualizacion");
+    if (updated) hm.textContent = "Última actualización: " + updated.valor;
+  }
+}
+
+// ============================================================
+// INDICES CHART
+// ============================================================
+function setIndex(col, title, btn) {
+  state.currentIndex = col;
+  document.getElementById("indices-title").textContent = title;
+  document.querySelectorAll("#idx-tabs .btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderIndices();
+}
+
+function setRange(chart, days, btn) {
+  if (chart === "idx") state.idxDays = days;
+  else state.tkrDays = days;
+  const groupId = chart === "idx" ? "idx-range" : "tkr-range";
+  document.querySelectorAll("#" + groupId + " .btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  if (chart === "idx") renderIndices();
+  else renderTicker();
+}
+
+function setPeriod(chart, period, btn) {
+  if (chart === "wl") state.wlPeriod = period;
+  const groupId = "wl-period";
+  document.querySelectorAll("#" + groupId + " .btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderWinnersLosers();
+}
+
+function renderIndices() {
+  const df = state.data.precios_bs;
+  if (!df) return;
+  const col = state.currentIndex;
+  const rows = sliceDays(df, state.idxDays);
+  const dates = getDates(rows);
+  const vals  = getCol(rows, col);
+
+  // Color gradient: green if last > first
+  const first = vals.find(v => v !== null);
+  const last  = [...vals].reverse().find(v => v !== null);
+  const color = last >= first ? "#00e5a0" : "#ff4d6a";
+  const fillColor = last >= first
+    ? "rgba(0,229,160,0.08)"
+    : "rgba(255,77,106,0.08)";
+
+  const trace = {
+    x: dates, y: vals,
+    type: "scatter", mode: "lines",
+    line: { color, width: 2, shape: "spline" },
+    fill: "tozeroy", fillcolor: fillColor,
+    name: col,
+    hovertemplate: "<b>%{x}</b><br>" + col + ": %{y:,.2f}<extra></extra>",
+  };
+
+  const layout = {
+    ...LAYOUT_BASE,
+    yaxis: { ...LAYOUT_BASE.yaxis, tickformat: ",.0f" },
+  };
+
+  Plotly.react("chart-indices", [trace], layout, CFG);
+}
+
+// ============================================================
+// TICKER CHART
+// ============================================================
+function renderTicker() {
+  const ticker = document.getElementById("sel-ticker").value;
+  const dtype  = document.getElementById("sel-datatype").value;
+  state.ticker = ticker;
+
+  const dfMap = {
+    usd:     state.data.precios_usd,
+    bs:      state.data.precios_bs,
+    vol_usd: state.data.vol_usd,
+    vol_bs:  state.data.vol_bs,
+    ops:     state.data.ops,
+    cant:    state.data.cant,
+  };
+
+  const df = dfMap[dtype];
+  if (!df || !df.length) return;
+
+  const rows  = sliceDays(df, state.tkrDays);
+  const dates = getDates(rows);
+  const vals  = getCol(rows, ticker);
+
+  const isVolumetric = ["vol_usd","vol_bs","ops","cant"].includes(dtype);
+  const labels = { usd:"Precio USD", bs:"Precio Bs", vol_usd:"Volumen USD", vol_bs:"Volumen Bs", ops:"N° Operaciones", cant:"Cantidad Acciones" };
+  const label = labels[dtype];
+
+  const color = "#4d9fff";
+
+  let traces;
+  if (isVolumetric) {
+    traces = [{
+      x: dates, y: vals,
+      type: "bar",
+      marker: { color: "rgba(77,159,255,0.6)", line: { width: 0 } },
+      name: label,
+      hovertemplate: "<b>%{x}</b><br>" + label + ": %{y:,.2f}<extra></extra>",
+    }];
+  } else {
+    // Price chart with volume overlay
+    const volDf = dtype === "usd" ? state.data.vol_usd : state.data.vol_bs;
+    const volRows  = volDf ? sliceDays(volDf, state.tkrDays) : [];
+    const volVals  = volDf ? getCol(volRows, ticker) : [];
+
+    traces = [
+      {
+        x: dates, y: vals,
+        type: "scatter", mode: "lines",
+        line: { color, width: 2, shape: "linear" },
+        name: label,
+        yaxis: "y",
+        hovertemplate: "<b>%{x}</b><br>" + label + ": %{y:,.4f}<extra></extra>",
+      },
+      {
+        x: getDates(volRows), y: volVals,
+        type: "bar",
+        marker: { color: "rgba(77,159,255,0.2)", line: { width: 0 } },
+        name: dtype === "usd" ? "Vol. USD" : "Vol. Bs",
+        yaxis: "y2",
+        hovertemplate: "<b>%{x}</b><br>Volumen: %{y:,.0f}<extra></extra>",
+      }
+    ];
+  }
+
+  const layout = {
+    ...LAYOUT_BASE,
+    yaxis:  { ...LAYOUT_BASE.yaxis },
+    yaxis2: isVolumetric ? undefined : {
+      overlaying: "y", side: "right",
+      showgrid: false, gridcolor: "#1e2329",
+      tickfont: { size: 9 }, zeroline: false,
+      showticklabels: false,
+    },
+    legend: { ...LAYOUT_BASE.legend, orientation: "h", y: 1.08 },
+    barmode: "overlay",
+  };
+
+  Plotly.react("chart-ticker", traces, layout, CFG);
+}
+
+// ============================================================
+// WINNERS / LOSERS
+// ============================================================
+function getPeriodCutoff(period) {
+  const now = new Date();
+  if (period === "7d")  { const d = new Date(now); d.setDate(d.getDate()-7);   return d; }
+  if (period === "30d") { const d = new Date(now); d.setDate(d.getDate()-30);  return d; }
+  if (period === "1y")  { const d = new Date(now); d.setFullYear(d.getFullYear()-1); return d; }
+  if (period === "ytd") { return new Date(now.getFullYear(), 0, 1); }
+  return new Date(now);
+}
+
+function calcReturns(df, period) {
+  if (!df || !df.length) return [];
+  const cutoff = getPeriodCutoff(period);
+  const rows = df.filter(r => toDate(r.Fecha) >= cutoff);
+  if (rows.length < 2) return [];
+
+  const tickers = Object.keys(df[0]).filter(k => k !== "Fecha" && k !== "TC" && k !== "IBC" && k !== "IF" && k !== "II");
+
+  return tickers.map(t => {
+    const vals = rows.map(r => r[t] === "" || r[t] === undefined ? null : +r[t]).filter(v => v !== null && v > 0);
+    if (vals.length < 2) return null;
+    const ret = (vals[vals.length-1] - vals[0]) / vals[0] * 100;
+    const tradingDays = rows.filter(r => +r[t] > 0).length;
+    return { ticker: t, ret, tradingDays };
+  }).filter(Boolean);
+}
+
+function renderWinnersLosers() {
+  const currency = document.getElementById("sel-wl-currency").value;
+  const df = currency === "usd" ? state.data.precios_usd : state.data.precios_bs;
+  if (!df) return;
+
+  const returns = calcReturns(df, state.wlPeriod);
+  returns.sort((a, b) => b.ret - a.ret);
+
+  const winners = returns.slice(0, 5);
+  const losers  = returns.slice(-5).reverse();
+
+  const maxAbs = Math.max(...returns.map(r => Math.abs(r.ret)), 1);
+
+  function buildRows(data, isWinner) {
+    if (!data.length) return "<tr><td colspan='4' style='color:var(--dim);text-align:center;padding:20px'>Sin datos</td></tr>";
+    return data.map((d, i) => {
+      const color = isWinner ? "var(--green)" : "var(--red)";
+      const barW  = Math.round(Math.abs(d.ret) / maxAbs * 80);
+      return `<tr>
+        <td class="rank-num">${i+1}</td>
+        <td><span class="ticker-badge">${d.ticker}</span></td>
+        <td>
+          <div class="bar-wrap">
+            <div class="mini-bar" style="background:${color};width:${barW}px"></div>
+            <span style="color:${color};font-weight:500">${fmtPct(d.ret)}</span>
+          </div>
+        </td>
+        <td style="color:var(--dim)">${d.tradingDays}d</td>
+      </tr>`;
+    }).join("");
+  }
+
+  document.querySelector("#table-winners tbody").innerHTML = buildRows(winners, true);
+  document.querySelector("#table-losers tbody").innerHTML  = buildRows(losers,  false);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  await loadAll();
+  renderSummary();
+  populateTickerSelect();
+  renderIndices();
+  renderTicker();
+  renderWinnersLosers();
+}
+
+init();
+</script>
+</body>
+</html>
