@@ -39,23 +39,6 @@ https://raw.githubusercontent.com/carlosgleons/datos_bolsa_de_valores-_de-_carac
 
 ## 💻 Cómo usar los datos
 
-### R
-```r
-library(readr)
-
-precios <- read_csv("https://raw.githubusercontent.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas/main/data/precios_usd.csv")
-head(precios)
-```
-
-### Python
-```python
-import pandas as pd
-
-precios = pd.read_csv("https://raw.githubusercontent.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas/main/data/precios_usd.csv",
-                      parse_dates=["Fecha"])
-print(precios.head())
-```
-
 ### Excel / Google Sheets
 Descarga el CSV directamente desde los links de arriba, o en Excel usa:  
 `Datos → Obtener datos externos → Desde web` y pega la URL.
@@ -96,17 +79,6 @@ Fecha       TC     IBC      ABC.A   BNC    BPV   ...
 | BNC | Split 1:500 (16 enero 2025) | Precio histórico ×500, cantidad ÷500 |
 | BPV | Split ×2 (11 abril 2024) | Precio ÷2 antes de esa fecha |
 | BPV | Split ×3.327 (7 mayo 2024) | Precio ÷3.327 antes de esa fecha |
-
----
-
-## 🤖 Cómo funciona la automatización
-
-1. GitHub Actions corre el script `actualizar_bolsa.R` cada día hábil a las 6 AM (VET)
-2. El script detecta qué archivos `.dat` faltan y los descarga de la BVC
-3. Procesa los datos, aplica ajustes y exporta los CSVs
-4. Hace commit automático al repositorio con la fecha del día
-
-[![Actualización diaria](https://github.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas/actions/workflows/actualizar_bolsa.yml/badge.svg)](https://github.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas/actions/workflows/actualizar_bolsa.yml)
 
 ---
 
