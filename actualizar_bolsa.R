@@ -265,7 +265,7 @@ tickers_a_convertir <- setdiff(names(df_precios_bs), cols_no_convertir)
 df_precios_usd <- df_precios_bs |>
   mutate(across(
     all_of(tickers_a_convertir),
-    ~ if_else(!is.na(TC) & TC > 0, round(.x / TC, 4), NA_real_)
+    ~ if_else(!is.na(TC) & TC > 0, round(.x / TC, 2), NA_real_)
   ))
 
 # 7.5 Redondeo consistente
@@ -288,7 +288,7 @@ df_precios_usd <- df_precios_usd |>
     IBC = round(IBC, 2),
     IF  = round(IF,  2),
     II  = round(II,  2),
-    across(all_of(tickers_a_convertir), ~ round(.x, 4))
+    across(all_of(tickers_a_convertir), ~ round(.x, 2))
   )
 
 # ==============================================================================
