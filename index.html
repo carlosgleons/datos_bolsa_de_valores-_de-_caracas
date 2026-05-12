@@ -133,6 +133,63 @@
   }
   .nav-link:hover { color: var(--gold); }
 
+  .masthead-author {
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.3);
+    white-space: nowrap;
+  }
+
+  /* ── DOWNLOAD DROPDOWN ── */
+  .dl-dropdown {
+    position: relative;
+  }
+
+  .dl-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.55);
+    font-family: var(--body-font);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .dl-btn:hover { background: rgba(255,255,255,0.12); color: var(--gold); border-color: rgba(200,151,58,0.4); }
+
+  .dl-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--navy-mid);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    min-width: 160px;
+    z-index: 200;
+  }
+  .dl-dropdown:hover .dl-menu,
+  .dl-dropdown:focus-within .dl-menu { display: block; }
+
+  .dl-menu a {
+    display: block;
+    padding: 9px 16px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    color: rgba(255,255,255,0.65);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: all 0.12s;
+  }
+  .dl-menu a:last-child { border-bottom: none; }
+  .dl-menu a:hover { background: rgba(255,255,255,0.07); color: var(--gold); }
+
   /* ── TICKER TAPE ── */
   .ticker-tape {
     background: var(--bg-tape);
@@ -250,7 +307,7 @@
   }
 
   select {
-    background: rgba(255,255,255,0.08);
+    background: var(--navy);
     border: 1px solid rgba(255,255,255,0.18);
     color: var(--white);
     font-family: var(--body-font);
@@ -267,6 +324,7 @@
     letter-spacing: 0.04em;
   }
   select:focus { border-color: var(--gold); }
+  select option { background: var(--navy); color: var(--white); }
 
   .seg {
     display: flex;
@@ -423,7 +481,18 @@
       <div class="live-dot"></div>
       <span id="last-update">Cargando</span>
     </div>
-    <a class="nav-link" href="https://github.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas" target="_blank">Descargar datos ↗</a>
+    <span class="masthead-author">Carlos León Sevilla</span>
+    <div class="dl-dropdown">
+      <button class="dl-btn">Descargar datos ↗</button>
+      <div class="dl-menu">
+        <a href="https://github.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas/blob/main/data/precios_bs.csv" target="_blank">Precios Bs</a>
+        <a href="https://github.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas/blob/main/data/precios_usd.csv" target="_blank">Precios USD</a>
+        <a href="https://github.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas/blob/main/data/operaciones.csv" target="_blank">Operaciones</a>
+        <a href="https://github.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas/blob/main/data/cantidades.csv" target="_blank">Cantidades</a>
+        <a href="https://github.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas/blob/main/data/volumen_bs.csv" target="_blank">Volumen Bs</a>
+        <a href="https://github.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas/blob/main/data/volumen_usd.csv" target="_blank">Volumen USD</a>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -466,10 +535,10 @@
     </div>
     <div class="card">
       <div class="card-head">
-        <div class="card-title" id="idx-card-title">IBC — Índice Bursátil de Capitalización</div>
+        <div class="card-title" id="idx-card-title">IBC — Índice Bursátil de Caracas</div>
         <div class="controls">
           <div class="seg" id="idx-tabs">
-            <button class="seg-btn active" data-col="IBC" data-label="IBC — Índice Bursátil de Capitalización">IBC</button>
+            <button class="seg-btn active" data-col="IBC" data-label="IBC — Índice Bursátil de Caracas">IBC</button>
             <button class="seg-btn" data-col="IF" data-label="Índice Financiero">Financiero</button>
             <button class="seg-btn" data-col="II" data-label="Índice Industrial">Industrial</button>
           </div>
@@ -577,7 +646,6 @@
     Fuente: <a href="https://www.bolsadecaracas.com" target="_blank">bolsadecaracas.com</a>
     &nbsp;·&nbsp;
     <a href="https://github.com/carlosgleons/datos_bolsa_de_valores-_de-_caracas" target="_blank">GitHub</a>
-    &nbsp;·&nbsp; Carlos G. León
   </div>
 </footer>
 
