@@ -90,10 +90,10 @@
   .wordmark-sub {
     font-family: var(--body-font);
     font-size: 11px;
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,255,255,0.85);
   }
 
   .masthead-right {
@@ -137,7 +137,7 @@
     font-size: 10px;
     font-weight: 400;
     letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.72);
     white-space: nowrap;
   }
 
@@ -383,7 +383,7 @@
 
   .perf-table th {
     font-family: var(--body-font);
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -404,7 +404,7 @@
 
   .rank-n {
     font-family: var(--mono-font);
-    font-size: 10px;
+    font-size: 13px;
     color: var(--text-dim);
     width: 18px;
     padding-right: 8px;
@@ -412,7 +412,7 @@
 
   .tkr-name {
     font-family: var(--head-font);
-    font-size: 16px;
+    font-size: 22px;
     font-weight: 700;
     letter-spacing: 0.05em;
     color: var(--navy);
@@ -426,13 +426,13 @@
 
   .ret-val {
     font-family: var(--mono-font);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 400;
   }
 
   .days-val {
     font-family: var(--mono-font);
-    font-size: 10px;
+    font-size: 13px;
     color: var(--text-dim);
   }
 
@@ -448,13 +448,13 @@
     justify-content: space-between;
     align-items: center;
     font-size: 10px;
-    color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.5);
     letter-spacing: 0.08em;
     flex-wrap: wrap;
     gap: 8px;
   }
 
-  footer a { color: rgba(255,255,255,0.4); text-decoration: none; }
+  footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
   footer a:hover { color: var(--gold); }
 
   .footer-brand {
@@ -569,12 +569,9 @@
         <div class="controls">
           <select id="sel-ticker"></select>
           <select id="sel-dtype">
-            <option value="usd">Precio USD</option>
-            <option value="bs">Precio Bs</option>
-            <option value="vol_usd">Volumen USD</option>
-            <option value="vol_bs">Volumen Bs</option>
-            <option value="ops">N° Operaciones</option>
-            <option value="cant">Cantidad Acciones</option>
+            <option value="usd">USD</option>
+            <option value="bs">Bs</option>
+            <option value="cant_ops">Cant. &amp; Ops</option>
           </select>
           <div class="seg" id="tkr-range">
             <button class="seg-btn" data-days="30">1M</button>
@@ -664,10 +661,18 @@ const S = { data:{}, idxCol:"IBC", idxDays:180, tkrDays:90, wlPeriod:"30d", tick
 const THEME = {
   paper_bgcolor: "#ffffff",
   plot_bgcolor:  "#ffffff",
-  font: { family:"'Barlow', sans-serif", color:"#7a90a8", size:11 },
-  margin: { t:10, r:20, b:44, l:70 },
-  xaxis: { gridcolor:"#e8ecf2", linecolor:"#d0d8e4", tickfont:{size:10}, showgrid:true, zeroline:false },
-  yaxis: { gridcolor:"#e8ecf2", linecolor:"#d0d8e4", tickfont:{size:10}, showgrid:true, zeroline:false },
+  font: { family:"'Barlow', sans-serif", color:"#3a5070", size:11 },
+  margin: { t:36, r:88, b:44, l:72 },
+  xaxis: {
+    gridcolor:"#dde3ec", linecolor:"#5a7a9a", linewidth:2,
+    tickfont:{size:10,color:"#2a4060"}, showgrid:true, zeroline:false,
+    tickcolor:"#5a7a9a", ticks:"outside", ticklen:4,
+  },
+  yaxis: {
+    gridcolor:"#dde3ec", linecolor:"#5a7a9a", linewidth:2,
+    tickfont:{size:10,color:"#2a4060"}, showgrid:true, zeroline:false,
+    tickcolor:"#5a7a9a", ticks:"outside", ticklen:4,
+  },
   hovermode: "x unified",
   hoverlabel: {
     bgcolor:"#0d1e35", bordercolor:"#1a3a5c",
@@ -731,7 +736,7 @@ function renderIndices() {
 
   Plotly.react("chart-indices",[{
     x:xs, y:ys, type:"scatter", mode:"lines",
-    line:{color:lineC,width:2},
+    line:{color:lineC,width:2.5},
     fill:"tozeroy", fillcolor:fillC,
     name:S.idxCol,
     hovertemplate:"%{x}<br><b>"+S.idxCol+": %{y:,.2f}</b><extra></extra>",
@@ -740,37 +745,88 @@ function renderIndices() {
 
 // ── ticker chart ──
 function renderTicker() {
-  const ticker=document.getElementById("sel-ticker").value;
-  const dtype=document.getElementById("sel-dtype").value;
-  if(!ticker)return;
-  const dfMap={usd:S.data.precios_usd,bs:S.data.precios_bs,vol_usd:S.data.vol_usd,vol_bs:S.data.vol_bs,ops:S.data.ops,cant:S.data.cant};
-  const df=dfMap[dtype]; if(!df||!df.length)return;
-  const rows=sliceDays(df,S.tkrDays); if(!rows.length)return;
-  const xs=dates(rows), ys=col(rows,ticker);
-  const isVol=["vol_usd","vol_bs","ops","cant"].includes(dtype);
-  const labels={usd:"Precio USD",bs:"Precio Bs",vol_usd:"Volumen USD",vol_bs:"Volumen Bs",ops:"Operaciones",cant:"Cantidad"};
+  const ticker = document.getElementById("sel-ticker").value;
+  const dtype  = document.getElementById("sel-dtype").value;
+  if (!ticker) return;
 
-  let traces;
-  if(isVol){
-    traces=[{x:xs,y:ys,type:"bar",marker:{color:"rgba(44,82,130,0.6)",line:{width:0}},name:labels[dtype],hovertemplate:"%{x}<br><b>%{y:,.0f}</b><extra></extra>"}];
-  } else {
-    const volKey=dtype==="usd"?"vol_usd":"vol_bs";
-    const vdf=S.data[volKey], vrows=vdf?sliceDays(vdf,S.tkrDays):[];
-    const vxs=dates(vrows), vys=vdf?col(vrows,ticker):[];
-    const first=ys.find(v=>v!==null&&v>0)||0;
-    const last=[...ys].reverse().find(v=>v!==null&&v>0)||0;
-    const lineC=last>=first?"#1a3a5c":"#b85c5c";
-    traces=[
-      {x:xs,y:ys,type:"scatter",mode:"lines",line:{color:lineC,width:2},name:labels[dtype],yaxis:"y",hovertemplate:"%{x}<br><b>"+ticker+": %{y:,.4f}</b><extra></extra>"},
-      {x:vxs,y:vys,type:"bar",marker:{color:"rgba(200,151,58,0.25)",line:{width:0}},name:dtype==="usd"?"Vol. USD":"Vol. Bs",yaxis:"y2",hovertemplate:"Vol: %{y:,.0f}<extra></extra>"},
+  const rows_usd = sliceDays(S.data.precios_usd,  S.tkrDays);
+  const rows_bs  = sliceDays(S.data.precios_bs,   S.tkrDays);
+  const rows_vu  = sliceDays(S.data.vol_usd,      S.tkrDays);
+  const rows_vb  = sliceDays(S.data.vol_bs,       S.tkrDays);
+  const rows_ops = sliceDays(S.data.ops,           S.tkrDays);
+  const rows_cnt = sliceDays(S.data.cant,          S.tkrDays);
+
+  const AXIS_FONT  = { family:"'Barlow', sans-serif", size:10, color:"#2a4060" };
+  const TITLE_FONT = { family:"'Barlow', sans-serif", size:10, color:"#2a4060" };
+
+  // Base axis styles — inherit THEME but add title styling
+  const yBase = {
+    ...THEME.yaxis,
+    titlefont: TITLE_FONT,
+    title: { font: TITLE_FONT, standoff: 6 },
+    tickfont: { size:10, color:"#2a4060" },
+  };
+  const y2Base = {
+    overlaying:"y", side:"right", showgrid:false,
+    linecolor:"#5a7a9a", linewidth:2,
+    zeroline:false, tickcolor:"#5a7a9a", ticks:"outside", ticklen:4,
+    titlefont: TITLE_FONT,
+    title: { font: TITLE_FONT, standoff: 6 },
+    tickfont: { size:10, color:"#2a4060" },
+    showticklabels: true,
+  };
+
+  if (dtype === "usd" || dtype === "bs") {
+    const isBs = dtype === "bs";
+    const priceRows = isBs ? rows_bs  : rows_usd;
+    const volRows   = isBs ? rows_vb  : rows_vu;
+    const xs   = dates(priceRows), ys = col(priceRows, ticker);
+    const vxs  = dates(volRows),   vys = col(volRows,  ticker);
+    const first = ys.find(v=>v!==null&&v>0)||0;
+    const last  = [...ys].reverse().find(v=>v!==null&&v>0)||0;
+    const lineC = last >= first ? "#1a3a5c" : "#b85c5c";
+    const ccy   = isBs ? "Bs" : "USD";
+    const traces = [
+      { x:xs,  y:ys,  type:"scatter", mode:"lines",
+        line:{color:lineC, width:2.5}, name:`Precio ${ccy}`, yaxis:"y",
+        hovertemplate:`%{x}<br><b>${ticker}: %{y:,.4f} ${ccy}</b><extra></extra>` },
+      { x:vxs, y:vys, type:"bar",
+        marker:{color:"rgba(200,151,58,0.22)", line:{width:0}},
+        name:`Vol. ${ccy}`, yaxis:"y2",
+        hovertemplate:`Vol: %{y:,.0f}<extra></extra>` },
     ];
+    Plotly.react("chart-ticker", traces, {
+      ...THEME,
+      yaxis:  { ...yBase,  title:{ text:`Precio (${ccy})`,  font:TITLE_FONT, standoff:6 } },
+      yaxis2: { ...y2Base, title:{ text:`Volumen (${ccy})`, font:TITLE_FONT, standoff:6 } },
+      barmode:"overlay",
+      legend:{ bgcolor:"transparent", font:{size:10,color:"#3a5070"}, orientation:"h", y:1.08, x:0 },
+    }, CFG);
+
+  } else {
+    // Cant. & Ops — dual-axis: cantidad left, operaciones right
+    const xs    = dates(rows_cnt);
+    const yCant = col(rows_cnt, ticker);
+    const xsOps = dates(rows_ops);
+    const yOps  = col(rows_ops, ticker);
+    const traces = [
+      { x:xs,    y:yCant, type:"bar",
+        marker:{color:"rgba(44,82,130,0.55)", line:{width:0}},
+        name:"Cant. acciones", yaxis:"y",
+        hovertemplate:`%{x}<br><b>Cant.: %{y:,.0f}</b><extra></extra>` },
+      { x:xsOps, y:yOps,  type:"scatter", mode:"lines+markers",
+        line:{color:"#c8973a", width:2}, marker:{size:3, color:"#c8973a"},
+        name:"N° operaciones", yaxis:"y2",
+        hovertemplate:`N° ops: %{y:,.0f}<extra></extra>` },
+    ];
+    Plotly.react("chart-ticker", traces, {
+      ...THEME,
+      yaxis:  { ...yBase,  title:{ text:"Cantidad de acciones", font:TITLE_FONT, standoff:6 } },
+      yaxis2: { ...y2Base, title:{ text:"N° de operaciones",    font:TITLE_FONT, standoff:6 } },
+      barmode:"group",
+      legend:{ bgcolor:"transparent", font:{size:10,color:"#3a5070"}, orientation:"h", y:1.08, x:0 },
+    }, CFG);
   }
-  Plotly.react("chart-ticker",traces,{
-    ...THEME,
-    yaxis2:isVol?undefined:{overlaying:"y",side:"right",showgrid:false,showticklabels:false,zeroline:false},
-    barmode:"overlay",
-    legend:{bgcolor:"transparent",font:{size:10,color:"#3a5070"},orientation:"h",y:1.06,x:0},
-  },CFG);
 }
 
 // ── winners / losers ──
