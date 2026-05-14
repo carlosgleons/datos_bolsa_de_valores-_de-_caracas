@@ -57,7 +57,7 @@ Fecha       TC     IBC      ABC.A   BNC    BPV   ...
 2024-01-03  36.6   1238.1   3.20    18.50  0.31  ...
 ```
 
-- `TC`: Tipo de cambio BCV (Bs/USD)
+- `TC`: Tasa de cambio BCV (Bs/USD)
 - `IBC`: Índice Bursátil de Capitalización
 - `IF`: Índice Financiero
 - `II`: Índice Industrial
