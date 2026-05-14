@@ -141,7 +141,122 @@
     white-space: nowrap;
   }
 
-  /* ── DOWNLOAD DROPDOWN ── */
+  /* ── PRICE LOOKUP PANEL ── */
+  .px-lookup {
+    position: relative;
+  }
+
+  .px-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.55);
+    font-family: var(--body-font);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .px-btn:hover, .px-btn.open { background: rgba(255,255,255,0.12); color: var(--gold); border-color: rgba(200,151,58,0.4); }
+
+  .px-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--navy);
+    border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+    width: 340px;
+    z-index: 300;
+    padding: 14px 16px 16px;
+  }
+  .px-panel.open { display: block; }
+
+  .px-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+
+  .px-panel-title {
+    font-family: var(--head-font);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+  }
+
+  .px-selects {
+    display: flex;
+    gap: 6px;
+  }
+
+  .px-selects select {
+    font-size: 10px;
+    padding: 4px 22px 4px 8px;
+    background-color: var(--navy-mid);
+    border-color: rgba(255,255,255,0.14);
+  }
+
+  .px-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .px-table th {
+    font-family: var(--body-font);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    padding: 0 0 7px;
+    text-align: right;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .px-table th:first-child { text-align: left; }
+
+  .px-table td {
+    font-family: var(--mono-font);
+    font-size: 12px;
+    padding: 8px 0;
+    text-align: right;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.85);
+    vertical-align: middle;
+  }
+  .px-table tr:last-child td { border-bottom: none; }
+  .px-table td:first-child {
+    font-family: var(--head-font);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--white);
+    text-align: left;
+  }
+
+  .px-chg-pos { color: #4caf82; }
+  .px-chg-neg { color: #e05a5a; }
+  .px-na { color: rgba(255,255,255,0.25); font-size: 10px; }
+
+  .px-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.3);
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 0 0 8px;
+  }
+  .px-close:hover { color: rgba(255,255,255,0.7); }
+
   .dl-dropdown {
     position: relative;
   }
@@ -216,7 +331,7 @@
     font-weight: 500;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.35);
+    color: rgba(255,255,255,0.58);
     margin-bottom: 4px;
   }
 
@@ -259,7 +374,7 @@
 
   .section-tag {
     font-family: var(--head-font);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
@@ -482,6 +597,37 @@
       <span id="last-update">Cargando</span>
     </div>
     <span class="masthead-author">Carlos León Sevilla</span>
+    <div class="px-lookup">
+      <button class="px-btn" id="px-btn">Consultar ▾</button>
+      <div class="px-panel" id="px-panel">
+        <div class="px-panel-head">
+          <span class="px-panel-title" id="px-panel-title">Precio por acción</span>
+          <div class="px-selects">
+            <select id="px-metric">
+              <option value="precio">Precio</option>
+              <option value="volumen">Volumen</option>
+            </select>
+            <select id="px-ccy">
+              <option value="usd">USD</option>
+              <option value="bs">Bs</option>
+            </select>
+            <select id="px-ticker"></select>
+          </div>
+          <button class="px-close" id="px-close">×</button>
+        </div>
+        <table class="px-table">
+          <thead><tr id="px-thead-row">
+            <th>Acción</th>
+            <th>Último</th>
+            <th>Hace 1 sem.</th>
+            <th>Hace 1 mes</th>
+          </tr></thead>
+          <tbody id="px-tbody">
+            <tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,0.25);font-size:11px;padding:12px 0">Cargando datos…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
     <div class="dl-dropdown">
       <button class="dl-btn">Descargar datos ↗</button>
       <div class="dl-menu">
@@ -514,7 +660,7 @@
     <div class="tape-change neu" id="t-ii-c">—</div>
   </div>
   <div class="tape-cell">
-    <div class="tape-label">Tipo de Cambio BCV</div>
+    <div class="tape-label">Tasa de Cambio BCV</div>
     <div class="tape-value" id="t-tc">—</div>
     <div class="tape-change neu">Bs / USD</div>
   </div>
@@ -893,7 +1039,123 @@ function wireSegs(groupId,cb){
   });
 }
 
-// ── init ──
+// ── price lookup panel ──
+function renderPxPanel() {
+  const metric = document.getElementById("px-metric").value;
+  const ccy    = document.getElementById("px-ccy").value;
+  const ticker = document.getElementById("px-ticker").value;
+  const tbody  = document.getElementById("px-tbody");
+  const thead  = document.getElementById("px-thead-row");
+  const title  = document.getElementById("px-panel-title");
+
+  const cLabel = ccy === "usd" ? "USD" : "Bs";
+
+  // Update title
+  title.textContent = metric === "precio"
+    ? `Precio por acción (${cLabel})`
+    : `Volumen negociado (${cLabel})`;
+
+  // Pick dataset
+  let rows;
+  if (metric === "precio") {
+    rows = ccy === "usd" ? S.data.precios_usd : S.data.precios_bs;
+  } else {
+    rows = ccy === "usd" ? S.data.vol_usd : S.data.vol_bs;
+  }
+
+  if (!ticker || !rows) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,0.25);font-size:11px;padding:12px 0">Sin datos</td></tr>`;
+    return;
+  }
+
+  const valid = rows.filter(r => r[ticker] != null && +r[ticker] > 0)
+                    .sort((a,b) => a.Fecha < b.Fecha ? -1 : 1);
+
+  if (!valid.length) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,0.25);font-size:11px;padding:12px 0">Sin datos para ${ticker}</td></tr>`;
+    return;
+  }
+
+  const last  = valid[valid.length - 1];
+  const lastD = new Date(last.Fecha);
+
+  function findBefore(daysBefore) {
+    const target = new Date(lastD);
+    target.setDate(target.getDate() - daysBefore);
+    const ts = target.toISOString().slice(0,10);
+    const before = valid.filter(r => r.Fecha <= ts);
+    return before.length ? before[before.length - 1] : null;
+  }
+
+  const r7  = findBefore(7);
+  const r30 = findBefore(30);
+
+  const isVol = metric === "volumen";
+  const fmtP = v => v != null
+    ? isVol
+      ? (+v).toLocaleString("es-VE", {maximumFractionDigits:0})
+      : (+v).toLocaleString("es-VE", {minimumFractionDigits:2, maximumFractionDigits:4})
+    : null;
+
+  const fmtChg = (now, then) => {
+    if (!then || !+then[ticker]) return `<span class="px-na">—</span>`;
+    const pct = ((+now[ticker] - +then[ticker]) / +then[ticker]) * 100;
+    const cls  = pct >= 0 ? "px-chg-pos" : "px-chg-neg";
+    const sign = pct >= 0 ? "+" : "";
+    return `<span class="${cls}">${sign}${pct.toFixed(1)}%</span>`;
+  };
+
+  // Update column header label
+  thead.innerHTML = `
+    <th>${isVol ? "Acción" : "Acción"}</th>
+    <th>Último</th>
+    <th>Hace 1 sem.</th>
+    <th>Hace 1 mes</th>`;
+
+  const lastVal = fmtP(last[ticker]);
+  const w7val   = r7  ? fmtP(r7[ticker])  : null;
+  const m1val   = r30 ? fmtP(r30[ticker]) : null;
+
+  const unitTag = `<span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:0.1em">${cLabel}</span>`;
+
+  tbody.innerHTML = `<tr>
+    <td>${ticker}</td>
+    <td>${lastVal ?? '<span class="px-na">—</span>'} ${unitTag}</td>
+    <td>${w7val  ?? '<span class="px-na">—</span>'} ${unitTag}<br><span style="font-size:10px">${fmtChg(last, r7)}</span></td>
+    <td>${m1val  ?? '<span class="px-na">—</span>'} ${unitTag}<br><span style="font-size:10px">${fmtChg(last, r30)}</span></td>
+  </tr>`;
+}
+
+function initPxPanel() {
+  const btn   = document.getElementById("px-btn");
+  const panel = document.getElementById("px-panel");
+  const closeBtn = document.getElementById("px-close");
+
+  btn.addEventListener("click", () => {
+    const open = panel.classList.toggle("open");
+    btn.classList.toggle("open", open);
+    if (open) renderPxPanel();
+  });
+
+  closeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    panel.classList.remove("open");
+    btn.classList.remove("open");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!document.querySelector(".px-lookup").contains(e.target)) {
+      panel.classList.remove("open");
+      btn.classList.remove("open");
+    }
+  });
+
+  document.getElementById("px-metric").addEventListener("change", renderPxPanel);
+  document.getElementById("px-ticker").addEventListener("change", renderPxPanel);
+  document.getElementById("px-ccy").addEventListener("change", renderPxPanel);
+}
+
+
 async function init(){
   const keys=Object.keys(URLS);
   const results=await Promise.allSettled(keys.map(k=>loadCSV(URLS[k])));
@@ -901,14 +1163,19 @@ async function init(){
 
   S.tickers=validTickers(S.data.precios_usd);
 
-  // Populate ticker select
-  const sel=document.getElementById("sel-ticker");
-  S.tickers.forEach(t=>{ const o=document.createElement("option"); o.value=o.textContent=t; sel.appendChild(o); });
+  // Populate ticker selects (main + price lookup)
+  const sel    = document.getElementById("sel-ticker");
+  const pxSel  = document.getElementById("px-ticker");
+  S.tickers.forEach(t=>{
+    const o1 = document.createElement("option"); o1.value=o1.textContent=t; sel.appendChild(o1);
+    const o2 = document.createElement("option"); o2.value=o2.textContent=t; pxSel.appendChild(o2);
+  });
 
   renderTape();
   renderIndices();
   renderTicker();
   renderWinnersLosers();
+  initPxPanel();
 
   wireSegs("idx-tabs",btn=>{ S.idxCol=btn.dataset.col; document.getElementById("idx-card-title").textContent=btn.dataset.label; renderIndices(); });
   wireSegs("idx-range",btn=>{ S.idxDays=+btn.dataset.days; renderIndices(); });
