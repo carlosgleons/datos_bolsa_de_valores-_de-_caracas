@@ -6,6 +6,7 @@ Construida porque la BVC no ofrece un histórico consolidado accesible al públi
 **Actualización:** Lunes a viernes, 6:00 AM (hora Venezuela)  
 **Cobertura:** Desde el 1 de enero de 2024 en adelante
 **Dashboard:** (https://carlosgleons.github.io/datos_bolsa_de_valores-_de-_caracas/)
+
 **Fuente:** [bolsadecaracas.com](https://www.bolsadecaracas.com)
 
 ---
