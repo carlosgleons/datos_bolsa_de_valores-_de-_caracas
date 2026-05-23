@@ -78,10 +78,12 @@ walk(fechas_faltantes, descargar_dat)
 # === 3. TICKERS Y SPLITS
 # ==============================================================================
 
-tickers <- read_csv(tickers_path, col_names = FALSE, show_col_types = FALSE) |>
-  mutate(X1 = str_trim(X1)) |>
-  filter(X1 != "") |>
-  pull(X1)
+# TKR.csv ahora tiene dos columnas separadas por ";" con header: Ticker;Nombre
+# Solo se extrae la columna Ticker — la columna Nombre es para el dashboard web
+tickers <- read_delim(tickers_path, delim = ";", show_col_types = FALSE) |>
+  mutate(Ticker = str_trim(Ticker)) |>
+  filter(Ticker != "") |>
+  pull(Ticker)
 
 cat("Tickers cargados:", length(tickers), "\n")
 
