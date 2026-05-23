@@ -1,48 +1,49 @@
-ABC.A
-ALZ.B
-ARC.A
-ARC.B
-BNC
-BPV
-BVCC
-BVL
-CCP.B
-CCR
-CGQ
-CIE
-CRM.A
-DOM
-EFE
-ENV
-FVI.A
-FVI.B
-FFV.B
-FNC
-FNV
-GMC.B
-GZL
-GZL.A
-GZL.B
-ICP.B
-IMP.A
-IMP.B
-IVC.A
-IVC.B
-MPA
-MTC.B
-MVZ.A
-MVZ.B
-PCP.B
-PER
-PGR
-PIV.A
-PIV.B
-PTN
-RFM
-RST
-RST.B
-SVS
-TDV.D
-TPG
-VNA.B
-BOU
+Ticker;Nombre
+ABC.A;Banco del Caribe, C.A. Clase A
+ALZ.B;Alalza Inversiones, C.A. Clase B
+ARC.A;Arca Inmuebles y Valores, C.A. Clase A
+ARC.B;Arca Inmuebles y Valores, C.A. Clase B
+BNC;Banco Nacional de Crédito, C.A.
+BPV;BBVA Banco Provincial, S.A.
+BVCC;Bolsa de Valores de Caracas, C.A.
+BVL;Banco de Venezuela, S.A.
+CCP.B;Clabe Capital, C.A.
+CCR;Cerámica Carabobo, C.A.
+CGQ;Corporación Grupo Químico, C.A.
+CIE;Corporación Industrial de Energía, C.A.
+CRM.A;Corimón, C.A. Clase A
+DOM;Domínguez & Cía., S.A.
+EFE;Productos Efe, S.A.
+ENV;Envases Venezolanos, S.A.
+FVI.A;Fondo de Valores Inmobiliarios, S.A.C.A. Clase A
+FVI.B;Fondo de Valores Inmobiliarios, S.A.C.A. Clase B
+FFV.B;Fivenca Fondo de Capital Privado, S.A. Clase B
+FNC;Fábrica Nacional de Cementos, C.A.
+FNV;Fábrica Nacional de Vidrio, C.A.
+GMC.B;Grupo Mantra, C.A. Clase B
+GZL;Grupo Zuliano, C.A.
+GZL.A;Grupo Zuliano, C.A. Clase A
+GZL.B;Grupo Zuliano, C.A. Clase B
+ICP.B;Inversiones Crecepymes, C.A. Clase B
+IMP.A;Impulsa Agronegocios, C.A. Clase A
+IMP.B;Impulsa Agronegocios, C.A. Clase B
+IVC.A;INVACA, S.A.C.A. Clase A
+IVC.B;INVACA, S.A.C.A. Clase B
+MPA;Manufacturas de Papel, C.A.
+MTC.B;Montesco Capital Global, C.A. Clase B
+MVZ.A;Mercantil Servicios Financieros, C.A. Clase A
+MVZ.B;Mercantil Servicios Financieros, C.A. Clase B
+PCP.B;Fondo Petrolia C.A Clase B
+PER;PC-IBC Fondo Mutual de Inversión, C.A.
+PGR;Proagro, C.A.
+PIV.A;PIVCA Promotora de Inversiones, C.A. Clase A
+PIV.B;PIVCA Promotora de Inversiones, C.A. Clase B
+PTN;Protinal, C.A.
+RFM;Rendivalores Fondo Mutual, C.A.
+RST;C.A. Ron Santa Teresa
+RST.B;C.A. Ron Santa Teresa Clase B
+SVS;Siderúrgica Venezolana Sivensa, S.A.
+TDV.D;C.A. Nacional Teléfonos de Venezuela (CANTV) Clase D
+TPG;C.A. Telares de Palo Grande
+VNA.B;Venealternative, S.A. Clase B
+BOU;Banco Occidental de Descuento, C.A.
