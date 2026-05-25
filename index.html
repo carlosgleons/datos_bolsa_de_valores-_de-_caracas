@@ -1142,6 +1142,11 @@ function renderVolTotal() {
     hovertemplate:"%{x}<br><b>Vol. total: %{y:,.0f} "+ccy+"</b><extra></extra>",
   }],{
     ...THEME,
+    xaxis:{
+      ...THEME.xaxis,
+      type:"category",   // discreto: solo dibuja sesiones reales (sin fines de semana ni feriados)
+      nticks:14,         // limita la densidad de etiquetas en rangos largos
+    },
     yaxis:{
       ...THEME.yaxis,
       tickformat:",.0f",
