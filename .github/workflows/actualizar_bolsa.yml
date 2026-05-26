@@ -1,39 +1,33 @@
 name: Actualizar Datos Bolsa de Caracas
-
 on:
   schedule:
-    # 10:00 UTC = 6:00 AM Venezuela (VET = UTC-4)
-    - cron: '0 10 * * 1-5'   # Lunes a viernes
-  workflow_dispatch:           # También permite correrlo manualmente desde GitHub
+    - cron: '0 10 * * 1-5'
+  workflow_dispatch:
 
 jobs:
   actualizar:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
     permissions:
-      contents: write          # Necesario para hacer commit y push
+      contents: write
 
     steps:
-      # 1. Descargar el repositorio completo (incluyendo data/raw con .dat existentes)
       - name: Checkout repositorio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5          # ← v5 (Node.js 24, obligatorio desde jun 2)
         with:
-          fetch-depth: 0       # Historial completo para git log
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }} # ← token explícito para que persista en push
 
-      # 2. Instalar R
       - name: Instalar R
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: '4.4.0'
 
-      # 3. Instalar dependencias del sistema para httr (curl, SSL)
       - name: Instalar dependencias del sistema
         run: |
           sudo apt-get update -q
           sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
 
-      # 4. Cachear paquetes R (evita reinstalar en cada ejecución — ahorra ~3 min)
       - name: Cache paquetes R
         uses: actions/cache@v4
         with:
@@ -41,7 +35,6 @@ jobs:
           key: r-pkgs-v2-${{ runner.os }}
           restore-keys: r-pkgs-v2-
 
-      # 5. Instalar paquetes R
       - name: Instalar paquetes R
         run: |
           install.packages(c(
@@ -50,16 +43,15 @@ jobs:
           ), repos = "https://cloud.r-project.org", Ncpus = 2)
         shell: Rscript {0}
 
-      # 5. Correr el script principal
       - name: Ejecutar actualizar_bolsa.R
         run: Rscript actualizar_bolsa.R
 
-      # 6. Commit y push de los CSVs actualizados
       - name: Commit y push de datos
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # ← token disponible en el paso
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/
-          # Solo hace commit si hay cambios reales
           git diff --cached --quiet || git commit -m "datos: actualización $(date -u +'%Y-%m-%d')"
-          git push
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git HEAD:${{ github.ref_name }}
